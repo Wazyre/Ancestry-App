@@ -1,115 +1,276 @@
+import 'package:ancestry_app/src/ui/base/dropdown_search_widget.dart';
+import 'package:ancestry_app/src/ui/base/settings_provider.dart';
+import 'package:ancestry_app/src/ui/base/theme_provider.dart';
+import 'package:ancestry_app/src/ui/mainMenu/admin_screen.dart';
+import 'package:ancestry_app/src/ui/mainMenu/family_main_screen.dart';
+import 'package:ancestry_app/src/ui/mainMenu/login_admin_screen.dart';
+import 'package:ancestry_app/src/ui/mainMenu/options_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-void main() {
-  runApp(const MyApp());
+// TODO define fonts, weights, and sizes while matching accessibility settings
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  runApp(
+    MultiProvider(providers: [
+      ChangeNotifierProvider(create: (context) => ThemeProvider()),
+      ChangeNotifierProvider(create: (context) => SettingsProvider(prefs: prefs))
+    ],
+    child: const FamilyTreeApp()
+    )
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class FamilyTreeApp extends StatelessWidget {
+  const FamilyTreeApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+    return Consumer2<ThemeProvider, SettingsProvider>(builder: (context, themeProvider, settings, child) {
+      String themeMode = settings.savedSettings.themeMode;
+      return MaterialApp(
+            title: 'Family Tree',
+            theme: ThemeData(colorScheme: themeProvider.lightScheme),
+            darkTheme: ThemeData(colorScheme: themeProvider.darkScheme),
+            themeMode:  themeMode == '' ? ThemeMode.system : themeMode == 'dark' ? ThemeMode.dark : ThemeMode.light,
+            home: IntroScreen(),
+            locale: settings.savedSettings.locale == 'ar' ? Locale('ar', 'KW') : Locale('en', 'US'),
+            debugShowCheckedModeBanner: false,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          );
     });
   }
+}
+
+class IntroScreen extends StatefulWidget {
+  const IntroScreen({super.key});
+
+  @override
+  State<IntroScreen> createState() => _IntroState();
+}
+
+class _IntroState extends State<IntroScreen> {
+  // Future<Database> db = DbServices.instance.database;
+  // Future<List<Family>> sf = DbServices.instance.storedFamily;
+  
+  
+  // void tryDB() async {
+  //   DbServices db = DbServices.instance;
+  //   await db.ps();
+  //   // print(family);
+  // }
+  bool _pressedLangBtn = true;
+  String? _selectedFamily;
+  // final _selectFamilyKey = GlobalKey<FormState>();
+  
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      final theme = Provider.of<ThemeProvider>(context, listen: false);
+      final settings = Provider.of<SettingsProvider>(context, listen: false);
+      setState(() {
+        settings.setThemeMode(theme.getCurrentThemeMode(context));
+        _pressedLangBtn = settings.savedSettings.locale == 'ar';
+      });
+    });
+    
+  }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    final theme = Provider.of<ThemeProvider>(context);
+    final settings = Provider.of<SettingsProvider>(context);
+      
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        leading: TextButton(
+          style: ButtonStyle(
+            
+          ),
+          child: Text(_pressedLangBtn ? 'عر' : 'EN', style: theme.bodyNormal), 
+          onPressed: () {
+            setState(() {
+              _pressedLangBtn = !_pressedLangBtn;
+              settings.setLocale(_pressedLangBtn ? 'ar' : 'en');
+            });
+          }),
+        actions: [
+          IconButton(
+            icon: settings.savedSettings.themeMode == 'dark' ? Icon(Icons.wb_sunny_outlined) : Icon(Icons.wb_sunny), 
+            tooltip: 'Change theme mode',
+            onPressed: () {
+              settings.flipThemeMode();
+            }
+          ),
+          IconButton(
+            icon: Hero(
+              tag: 'hero-settings-icon', 
+              child: RotatedBox(
+                quarterTurns: 0, 
+                child: Icon(Icons.settings),
+              )
+            ),
+            tooltip: 'Open settings',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => OptionsScreen()),
+              );
+            },
+          )
+        ],
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
-              'You have pushed the button this many times:',
+              'Logo',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+            const SizedBox(height: 40),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: DropdownSearchWidget(
+                // TODO grab table family names properly
+                itemValueBuilder: (filter, cs) => ['العبدالجليل', 'العبدالجليل', 'العبدالجليل'], 
+                popupItemBuilder: (context, item, isDisabled, isSelected) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      child: Text(
+                        item,
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  }, 
+                context: context, 
+                label: Text(AppLocalizations.of(context)!.selectFamily,
+                      style: TextStyle(color: theme.getCurrentScheme(context).colorScheme.primary)), //TODO font size
+                onChangedFn: (value) {
+                  setState(() {
+                    _selectedFamily = value!;
+                  });
+                }, 
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return AppLocalizations.of(context)!.selectFamilyValidateErr;
+                  }
+                  return null;
+                },
+                baseStyle: TextStyle(color: theme.getCurrentScheme(context).colorScheme.primary), //TODO font size
+              )
+              // child: DropdownSearch<String>(
+              //   key: _selectFamilyKey,
+               
+              //   items: (filter, cs) => ['العبدالجليل', 'العبدالجليل', 'العبدالجليل'],
+              //   suffixProps: DropdownSuffixProps(
+              //     dropdownButtonProps: DropdownButtonProps(
+              //       iconClosed: Icon(Icons.keyboard_arrow_down),
+              //       iconOpened: Icon(Icons.keyboard_arrow_up))),
+              //   decoratorProps: DropDownDecoratorProps(
+              //     baseStyle: TextStyle(color: theme.getCurrentScheme(context).colorScheme.primary),
+              //     decoration: InputDecoration(
+              //       floatingLabelBehavior: FloatingLabelBehavior.auto,
+              //       labelText: AppLocalizations.of(context)!.selectFamily,
+              //       labelStyle: TextStyle(color: theme.getCurrentScheme(context).colorScheme.primary),
+              //       border: OutlineInputBorder(
+              //         borderSide: BorderSide(color: Colors.transparent),
+              //         borderRadius: BorderRadius.circular(12),
+              //       ),
+              //       focusedBorder: OutlineInputBorder(
+              //         borderSide: BorderSide(),
+              //         borderRadius: BorderRadius.circular(12),
+              //       ),
+              //       enabledBorder: OutlineInputBorder(
+              //         borderSide: BorderSide(color: Colors.transparent),
+              //         borderRadius: BorderRadius.circular(12),
+              //       ),
+              //       filled: true,
+              //       fillColor: Colors.white,
+              //       // hintText: 'Please choose family...'
+              //     )
+              //   ),
+              //   popupProps: PopupProps.menu(
+              //     itemBuilder: (context, item, isDisabled, isSelected) {
+              //       return Padding(
+              //         padding: const EdgeInsets.symmetric(vertical: 12.0),
+              //         child: Text(
+              //           item,
+              //           textAlign: TextAlign.center,
+              //         ),
+              //       );
+              //     },
+              //     showSearchBox: true,
+              //     searchFieldProps: TextFieldProps(
+              //       decoration: InputDecoration(
+              //         icon: Icon(Icons.search)
+              //       )
+              //     ),
+              //     constraints: BoxConstraints(maxHeight: 260),
+              //     menuProps: MenuProps(
+              //       margin: EdgeInsets.only(top: 12),
+              //       shape: const RoundedRectangleBorder(
+              //           borderRadius: BorderRadius.all(Radius.circular(12))),
+              //     ),
+              //   ),
+              //   // validator: (value) {
+              //   //   if 
+              //   // },
+              //   onChanged: (value) {
+              //     setState(() {
+              //       _selectedFamily = value!;
+              //     });
+              //   },
+              //   validator: (value) {
+              //     if (value == null || value.isEmpty) {
+              //       return AppLocalizations.of(context)!.selectValidateErr;
+              //     }
+              //     return null;
+              //   },
+              // ),
             ),
+            ElevatedButton(
+              onPressed: () {
+                if (_selectedFamily != null) {
+                  settings.setTabFamily(_selectedFamily! );
+                  // Navigate to main app screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => FamilyMainScreen()),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(AppLocalizations.of(context)!.selectFamilyValidateErr,
+                          style: theme.bodyNormal)));
+                }
+                
+              },
+              child: Text(AppLocalizations.of(context)!.enterFamily),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Navigate to admin screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AdminScreen()), //TODO fix to login after debugging
+                );
+              },
+              child: Text(AppLocalizations.of(context)!.adminButton,
+                  style: theme.bodyNormal),
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
