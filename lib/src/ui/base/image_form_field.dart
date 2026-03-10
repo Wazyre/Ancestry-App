@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ancestry_app/l10n/app_localizations.dart';
 
 class ImageFormField extends StatelessWidget {
 
@@ -9,7 +10,21 @@ class ImageFormField extends StatelessWidget {
   final Function(File) onChanged;
 
   const ImageFormField({super.key, required this.validator, required this.onChanged});
-  
+
+  Future<void> _pickFromGallery(BuildContext context) async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
+    if (result != null) {
+      onChanged.call(File(result.files.first.path!));
+    }
+  }
+
+  Future<void> _pickFromCamera(BuildContext context) async {
+    final XFile? photo = await ImagePicker().pickImage(source: ImageSource.camera);
+    if (photo != null) {
+      onChanged.call(File(photo.path));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return FormField<File>(
@@ -27,22 +42,22 @@ class ImageFormField extends StatelessWidget {
                   height: 0.5),
             ),
           );
-        } 
-        return OutlinedButton.icon(
-          
-          icon: Icon(Icons.image_outlined),
-          label: Text(AppLocalizations.of(context)!.adminFormImageUpload ),
-        
-          onPressed: () async {
-            FilePickerResult? file = await FilePicker.platform
-                .pickFiles(type: FileType.image);
-            if (file != null) {
-              File pickedFile = File(file.files.first.path!);
-              onChanged.call(pickedFile);
-            }
-          },
+        }
+        return Row(
+          children: [
+            OutlinedButton.icon(
+              icon: const Icon(Icons.image_outlined),
+              label: Text(AppLocalizations.of(context)!.adminFormImageUpload),
+              onPressed: () => _pickFromGallery(context),
+            ),
+            const SizedBox(width: 8),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.camera_alt_outlined),
+              label: Text(AppLocalizations.of(context)!.adminFormImageCamera),
+              onPressed: () => _pickFromCamera(context),
+            ),
+          ],
         );
-                  
       }
     );
   }

@@ -7,13 +7,15 @@ class SavedSettings {
   String locale;
   String tabFamily;
   String themeMode;
+  double textScale;
 
   SavedSettings({
-    required this.maleOnly, 
-    required this.nameLength, 
-    required this.locale, 
+    required this.maleOnly,
+    required this.nameLength,
+    required this.locale,
     required this.tabFamily,
     required this.themeMode,
+    required this.textScale,
   });
 }
 
@@ -21,7 +23,7 @@ class SettingsProvider with ChangeNotifier {
 
   final SharedPreferences prefs;
   SavedSettings savedSettings = SavedSettings(
-      maleOnly: false, nameLength: -1, locale: '', tabFamily: '', themeMode: ''
+      maleOnly: false, nameLength: -1, locale: '', tabFamily: '', themeMode: '', textScale: 1.0
     );
 
   SettingsProvider({required this.prefs}) {
@@ -62,6 +64,12 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void setTextScale(double value) {
+    prefs.setDouble('textScale', value);
+    savedSettings.textScale = value;
+    notifyListeners();
+  }
+
   void flipThemeMode() {
     if (savedSettings.themeMode == 'dark') {
       prefs.setString('themeMode', 'light');
@@ -81,9 +89,10 @@ class SettingsProvider with ChangeNotifier {
     savedSettings.themeMode = prefs.getString('themeMode') ?? '';
     savedSettings.locale = prefs.getString('locale') ?? 'ar';
     savedSettings.tabFamily = prefs.getString('tabFamily') ?? '';
+    savedSettings.textScale = prefs.getDouble('textScale') ?? 1.0;
   }
 
-  getPrefItem(String key) {
+  Object? getPrefItem(String key) {
     return prefs.get(key);
   }
 }

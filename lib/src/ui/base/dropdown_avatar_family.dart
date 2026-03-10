@@ -3,7 +3,7 @@ import 'package:ancestry_app/src/ui/base/theme_provider.dart';
 import 'package:ancestry_app/src/ui/mainMenu/db_services.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ancestry_app/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 class DropdownAvatarFamily extends StatefulWidget {
@@ -129,7 +129,7 @@ class _DropdownAvatarFamilyState extends State<DropdownAvatarFamily> {
     );
   }
 
-  List<(CircleAvatar, Family)> buildDropdown(context) {
+  List<(CircleAvatar, Family)> buildDropdown(BuildContext context) {
     List<(CircleAvatar, Family)> builtFamily = [];
     String fullName = '';
     final settings = Provider.of<SettingsProvider>(context, listen: false);
@@ -166,8 +166,10 @@ class _DropdownAvatarFamilyState extends State<DropdownAvatarFamily> {
 
       builtFamily.add((
         CircleAvatar(
-          // radius: 5.0,
-          backgroundImage: AssetImage(person.imgUrl ?? 'images/ahm.png'),
+          backgroundColor: Color.fromARGB(0, 0, 0, 0),
+          backgroundImage: person.imgUrl != null && person.imgUrl!.startsWith('http')
+              ? NetworkImage(person.imgUrl!) as ImageProvider
+              : AssetImage(person.imgUrl ?? 'assets/profile.png'),
         ),
         tempPerson
       ));
@@ -176,7 +178,6 @@ class _DropdownAvatarFamilyState extends State<DropdownAvatarFamily> {
       setState(() {
         _initalFamilyBuilt = builtFamily.firstWhere((f) => f.$2.id == _initalFamily);
       });
-      print(_initalFamilyBuilt);
     }
 
     return builtFamily;

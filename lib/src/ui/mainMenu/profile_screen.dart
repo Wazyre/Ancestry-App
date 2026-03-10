@@ -1,17 +1,16 @@
 import 'package:ancestry_app/src/ui/base/image_popup.dart';
 import 'package:ancestry_app/src/ui/base/photo_based_avatar.dart';
+import 'package:ancestry_app/src/ui/base/settings_provider.dart';
 import 'package:ancestry_app/src/ui/base/theme_provider.dart';
 import 'package:ancestry_app/src/ui/mainMenu/db_services.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ancestry_app/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-// import 'package:path/path.dart';
 
 class ProfileScreen extends StatefulWidget {
   final Family person;
 
   const ProfileScreen({super.key, required this.person});
-
 
   @override
   State<ProfileScreen> createState() => _ProfileState();
@@ -26,14 +25,9 @@ class _ProfileState extends State<ProfileScreen> {
 
   final double _bigSpacing = 16.0;
 
-  // int? _childrenCount;
-  // bool _showParent = true;
-  // bool _showGrandparent = true;
-
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    
     setState(() {
       _person = widget.person;
     });
@@ -44,132 +38,176 @@ class _ProfileState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(),
-      body: Directionality(
-        textDirection: TextDirection.ltr,
-        child: ListView(
-            
-            children: [
-              Column(
-                children: [Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 8.0),
-                  child: CircleAvatar(
-                    radius: 100.0,
-                    backgroundImage: AssetImage(_person!.imgUrl ??= 'images/ahm.png'),
-                    child: GestureDetector(
-                      onTap: () async {
-                        await showDialog(
-                          context: context, 
-                          builder: (_) => ImagePopup(imgUrl: _person?.imgUrl)
-                        );
-                      },
-                    ),  
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.profileTitle, style: const TextStyle(fontFamily: 'ArefRuqaa')),
+        centerTitle: true,
+      ),
+      body: ListView(
+        children: [
+          // Avatar
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 16, 0, 8),
+              child: Hero(
+                tag: 'avatar-${_person!.id}',
+                child: CircleAvatar(
+                  radius: 90.0,
+                  backgroundImage: (_person!.imgUrl != null && _person!.imgUrl!.startsWith('http'))
+                      ? NetworkImage(_person!.imgUrl!) as ImageProvider
+                      : AssetImage(_person!.imgUrl ?? 'assets/profile.png'),
+                  child: GestureDetector(
+                    onTap: () async {
+                      await showDialog(
+                        context: context,
+                        builder: (_) => ImagePopup(imgUrl: _person?.imgUrl),
+                      );
+                    },
                   ),
-                )
-              ]),
-              Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Container(
-                      decoration: ShapeDecoration(
-                        color: Color(0xFFF3E09F),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(topLeft: Radius.circular(12.0), bottomLeft: Radius.circular(12.0))
-                        )),
-                      padding: EdgeInsets.fromLTRB(9.0, 3.0, 3.0, 3.0),
-                      child: Text(_person!.name!, 
-                              style: TextStyle(color: Colors.black))),
-                    Container(
-                      decoration: ShapeDecoration(
-                        color: Color(0xFFF3E09F),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                            // topLeft: Radius.circular(12.0),
-                            bottomLeft: Radius.circular(12.0)))),
-                        padding: EdgeInsets.fromLTRB(9.0, 3.0, 3.0, 3.0),
-                      child: Text('${_person!.yearBorn} - ${_person!.yearDied ?? ''}',
-                              style: TextStyle(color: Colors.black))),
-                    SizedBox(height: _bigSpacing),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      spacing: 4.0,
-                      textDirection: TextDirection.rtl,
-                      children: [
-                        Visibility(
-                          visible: _children != null,
-                          child: Text(AppLocalizations.of(context)!.profileSonM,
-                            style: theme.bodyBold)
-                        ),
-                        Visibility(
-                          visible: _children != null,
-                          child: Column(
-                            children: _children!.map((c) {
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute( builder: (context) => ProfileScreen(person: c)));
-                                },
-                                child: PhotoBasedAvatar(person: c)
-                              );
-                            }).toList()
-                          )
-                        ),
-                        
-                        Visibility(
-                          visible: _parent != null,
-                          child: Text(_person!.gender == 1 ? AppLocalizations.of(context)!.profileParentM : AppLocalizations.of(context)!.profileParentF,
-                            style: theme.bodyBold)
-                        ),
-                        Visibility(
-                            visible: _parent != null,
-                            child: GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute( builder: (context) => ProfileScreen(person: _parent!)));
-                                },
-                                child: PhotoBasedAvatar(person: _parent)
-                              //   Text(_parent?.name! ?? '',
-                              // style: theme.bodyNormal),
-                              )
-                        ),
-                        
-                        Visibility(
-                          visible: _grandparent != null,
-                          child: Text(_person!.gender == 1 ? AppLocalizations.of(context)!.profileGrandparentM : AppLocalizations.of(context)!.profileGrandparentF,
-                            style: theme.bodyBold)
-                        ),
-                        Visibility(
-                          visible: _grandparent != null,
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          ProfileScreen(person: _grandparent!)));
-                            },
-                            child: PhotoBasedAvatar(person: _grandparent)
-                          )
-                        ),
-                      ],
-                    )
-                  ],
                 ),
-              Container(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  _person!.bio ?? 'bio',
-                  textDirection: TextDirection.rtl,
-                  style: theme.bodyNormal
-                ),
-              )
-            ],
+              ),
+            ),
           ),
-        ),
-      );
+
+          // Name & dates pill — always flush to the physical right edge
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.fromLTRB(12, 6, 8, 6),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      bottomLeft: Radius.circular(12),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _person!.name!,
+                        style: TextStyle(
+                          color: colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        '${_person!.yearBorn ?? ''} - ${_person!.yearDied ?? ''}',
+                        style: TextStyle(color: colorScheme.onPrimaryContainer),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(height: _bigSpacing),
+
+          // Lineage row: grandparent → parent → children (RTL)
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              textDirection: TextDirection.rtl,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (_children != null && _children!.isNotEmpty) ...[
+                  _LineageGroup(
+                    label: AppLocalizations.of(context)!.profileSonM,
+                    theme: theme,
+                    colorScheme: colorScheme,
+                    children: (_children ?? []).map((c) {
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ProfileScreen(person: c)),
+                          );
+                        },
+                        child: PhotoBasedAvatar(person: c.copy(name: c.name?.split(' ').first), genderColor: false),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(width: 20),
+                ],
+                if (_parent != null) ...[
+                  _LineageGroup(
+                    label: _person!.gender == 1
+                        ? AppLocalizations.of(context)!.profileParentM
+                        : AppLocalizations.of(context)!.profileParentF,
+                    theme: theme,
+                    colorScheme: colorScheme,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    ProfileScreen(person: _parent!)),
+                          );
+                        },
+                        child: PhotoBasedAvatar(person: _parent!.copy(name: _parent!.name?.split(' ').first), genderColor: false),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 20),
+                ],
+                if (_grandparent != null) ...[
+                  _LineageGroup(
+                    label: _person!.gender == 1
+                        ? AppLocalizations.of(context)!.profileGrandparentM
+                        : AppLocalizations.of(context)!.profileGrandparentF,
+                    theme: theme,
+                    colorScheme: colorScheme,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    ProfileScreen(person: _grandparent!)),
+                          );
+                        },
+                        child: PhotoBasedAvatar(person: _grandparent!.copy(name: _grandparent!.name?.split(' ').first), genderColor: false),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          // Bio card
+          if (_person!.bio != null && _person!.bio!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 16, 12, 16),
+              child: Card(
+                elevation: 0,
+                color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(14.0),
+                  child: Text(_person!.bio!, style: theme.bodyNormal),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   Future getFamily() async {
@@ -179,22 +217,80 @@ class _ProfileState extends State<ProfileScreen> {
     });
   }
 
+  Family _withFullName(Family person) {
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    final nameLength = settings.savedSettings.nameLength;
+    String fullName = person.name ?? '';
+    Family? tempParent = person.parent != null
+        ? _familyList?.firstWhere((p) => p.id == person.parent, orElse: () => person)
+        : null;
+    for (int i = 0; i < nameLength - 2; i++) {
+      if (tempParent?.name != null && tempParent?.id != person.id) {
+        fullName += ' ${tempParent!.name}';
+        if (tempParent.parent != null) {
+          tempParent = _familyList?.firstWhere((p) => p.id == tempParent!.parent, orElse: () => tempParent!);
+        } else {
+          break;
+        }
+      } else {
+        break;
+      }
+    }
+    if (person.familyName != null && person.familyName!.isNotEmpty) {
+      fullName += ' ${person.familyName}';
+    }
+    return person.copy(name: fullName.trim());
+  }
+
   void buildFamilyListView() {
     if (_person!.parent != null) {
+      final rawParent = _familyList?.firstWhere((p) => p.id == _person!.parent);
       setState(() {
-        _parent = _familyList?.firstWhere((p) => p.id == _person!.parent);
+        _parent = rawParent != null ? _withFullName(rawParent) : null;
       });
-    
-      if (_parent!.parent != null) {
+
+      if (_parent?.parent != null) {
+        final rawGrandparent = _familyList?.firstWhere((p) => p.id == _parent!.parent);
         setState(() {
-          _grandparent = _familyList?.firstWhere((p) => p.id == _parent!.parent);
+          _grandparent = rawGrandparent != null ? _withFullName(rawGrandparent) : null;
         });
       }
     }
 
     setState(() {
-      _children = _familyList?.where((c) => c.parent == _person!.id).toList();
+      _children = _familyList?.where((c) => c.parent == _person!.id).map(_withFullName).toList();
     });
   }
-  
-} 
+}
+
+class _LineageGroup extends StatelessWidget {
+  final String label;
+  final ThemeProvider theme;
+  final ColorScheme colorScheme;
+  final List<Widget> children;
+
+  const _LineageGroup({
+    required this.label,
+    required this.theme,
+    required this.colorScheme,
+    required this.children,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          Text(label, style: theme.bodyBold),
+          const SizedBox(height: 8),
+          ...children,
+        ],
+      ),
+    );
+  }
+}

@@ -25,7 +25,15 @@
     "@familyCompareMembers": {"description": "Button text for showing relationship between two people"},
     "familyContactAdmin": "Contact family admin",
     "@familyContactAdmin": {"description": "Button text for contacting family admin"},
+    "noAdminPhone": "No contact number",
+    "@noAdminPhone": {"description": "Modal title when no admin phone is registered"},
+    "noAdminPhoneBody": "No phone number has been registered for this family's admin yet.",
+    "@noAdminPhoneBody": {"description": "Modal body when no admin phone is registered"},
+    "dismiss": "Dismiss",
+    "@dismiss": {"description": "Button to close a modal"},
 
+    "profileTitle": "Profile",
+    "@profileTitle": {"description": "Title of profile screen"},
     "profileSonM": "Children",
     "@profileSonM": {"description": "Header for children if male"},
     "profileParentM": "Father",
@@ -56,6 +64,15 @@
 
     "optMalesOnlyLabel": "Show males only in tree",
     "@optMalesOnlyLabel": {"description": "Label for males only checkbox"},
+
+    "optTextSizeLabel": "Text Size:",
+    "@optTextSizeLabel": {"description": "Label for text size radio list"},
+    "textSizeSystem": "System Default",
+    "@textSizeSystem": {"description": "Text size option: use system setting"},
+    "textSizeLarge": "Large",
+    "@textSizeLarge": {"description": "Text size option: large"},
+    "textSizeXLarge": "Extra Large",
+    "@textSizeXLarge": {"description": "Text size option: extra large"},
 
     "loginUsernameLabel": "Username",
     "@loginUsernameLabel": {"description": "Field label for username field in login page"},
@@ -96,6 +113,8 @@
     "@adminFormBio": {"description": "Form field label for biography field"},
     "adminFormImageUpload": "Portrait Upload",
     "@adminFormImageUpload": {"description": "Form field label for image upload field"},
+    "adminFormImageCamera": "Take Photo",
+    "@adminFormImageCamera": {"description": "Button label for taking a photo with the camera"},
     "adminFormImageCurrent": "Current Portrait:",
     "@adminFormImageCurrent": {"description": "Label for current portrait in admin form"},
     "adminFormImageNew": "New Portrait:",
@@ -108,7 +127,7 @@
     "adminFormYearBornVal": "Please enter year born",
     "@adminFormYearBornVal": {"description": "Validation error for year born field in admin form"},
     "adminFormParentVal": "Please choose parent or Family Head if none",
-    "@adminFormParentVal": {"description": "Validation error for parent field in admin form"}
-    
-    
+    "@adminFormParentVal": {"description": "Validation error for parent field in admin form"},
+    "adminFormYearDiedVal": "Year died must be after year born",
+    "@adminFormYearDiedVal": {"description": "Validation error for year died field in admin form"}
 }

@@ -79,7 +79,7 @@ class FamilyTree extends StatelessWidget {
         minScale: 0.01,
         maxScale: 5.6,
         child: CustomPaint(
-          size: Size(1080, 1920), // TODO surround with interactive viewer
+          size: Size(1080, 1920),
           painter: TreePainter(root: root, familyList: familyList),
         ),
       ),

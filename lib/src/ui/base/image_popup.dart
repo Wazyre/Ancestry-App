@@ -17,7 +17,10 @@ class ImagePopup extends StatelessWidget {
           height: 400,
           decoration: BoxDecoration(
               image: DecorationImage(
-                  image: ExactAssetImage(imgUrl ?? 'assets/ahm.jpg'), fit: BoxFit.cover)),
+                  image: (imgUrl != null && imgUrl!.startsWith('http'))
+                      ? NetworkImage(imgUrl!) as ImageProvider
+                      : AssetImage(imgUrl ?? 'assets/profile.png'),
+                  fit: BoxFit.cover)),
         ),
       ),
     );

@@ -3,8 +3,14 @@ import 'package:flutter/material.dart';
 
 class PhotoBasedAvatar extends StatelessWidget {
   final Family? person;
+  final bool genderColor;
 
-  const PhotoBasedAvatar({super.key, required this.person});
+  const PhotoBasedAvatar({super.key, required this.person, required this.genderColor});
+
+  static ImageProvider _imageFor(String? url) {
+    if (url != null && url.startsWith('http')) return NetworkImage(url);
+    return AssetImage(url ?? 'assets/profile.png');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +21,7 @@ class PhotoBasedAvatar extends StatelessWidget {
           decoration: BoxDecoration(
             image: DecorationImage(
               fit: BoxFit.fill,
-              image: AssetImage(person?.imgUrl ?? 'images/ahm.png'),
+              image: _imageFor(person?.imgUrl),
             ),
             shape: BoxShape.rectangle,
             border: Border.all(width: 1, color: Colors.black),
@@ -26,7 +32,7 @@ class PhotoBasedAvatar extends StatelessWidget {
           child: Text(
             person?.name! ?? '',
             style: TextStyle(
-                color: person?.gender == 1 ? Colors.black : Colors.white),
+                color: person?.gender == 0 && genderColor ? Colors.white : Colors.black),
           ),
         )
       ],

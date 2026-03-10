@@ -1,20 +1,10 @@
 import 'package:ancestry_app/src/ui/base/dropdown_avatar_family.dart';
-// import 'package:ancestry_app/src/ui/base/settings_provider.dart';
 import 'package:ancestry_app/src/ui/base/theme_provider.dart';
 import 'package:ancestry_app/src/ui/mainMenu/db_services.dart';
 import 'package:ancestry_app/src/ui/mainMenu/family_tree_screen.dart';
-// import 'package:ancestry_app/src/ui/mainMenu/profile_screen.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ancestry_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
-// import 'package:graphview/GraphView.dart';
 import 'package:provider/provider.dart';
-
-// class ModFamilyList {
-//   final Family root;
-//   final List<List<Family>> children;
-
-//   ModFamilyList({required this.root, required this.children});
-// }
 
 class FindRelationScreen extends StatefulWidget {
   const FindRelationScreen({super.key});
@@ -27,7 +17,6 @@ class _FindRelationState extends State<FindRelationScreen> {
   List<Family>? _familyList;
   Family? personA;
   Family? personB;
-  // Family? _focusedPerson;
 
   @override
   void initState() {
@@ -40,150 +29,160 @@ class _FindRelationState extends State<FindRelationScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context);
-    // final settings = Provider.of<SettingsProvider>(context);
-    // final maleOnly = settings.savedSettings.maleOnly;
-    // final familyName = settings.savedSettings.tabFamily;
-    
-    // return FutureBuilder(future: grabFamily(familyName, maleOnly), 
-    // builder: (context, snapshot) {
-    //   if (!snapshot.hasData) {
-    //     return Scaffold(
-    //       body: Center(
-    //         child: Column(
-    //           mainAxisAlignment: MainAxisAlignment.center,
-    //           children: [
-    //             CircularProgressIndicator(),
-    //           ],
-    //         ),
-    //       ),
-    //     ); 
-    //   }
-    //   else {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(),
-      body: Center(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisSize: MainAxisSize.max, 
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: DropdownAvatarFamily(
-                // context: context,
-                familyList: _familyList!,
-                onChangedFn: ((CircleAvatar, Family)? value) {
-                  setState(() {
-                    personA = value!.$2;
-                  });
-                },
-              )
+            // Person A card
+            _PersonSelectorCard(
+              label: '1',
+              familyList: _familyList!,
+              onChanged: (value) => setState(() { personA = value?.$2; }),
+              colorScheme: colorScheme,
+              theme: theme,
             ),
+
+            // Arrow between
             Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: DropdownAvatarFamily(
-                // context: context,
-                familyList: _familyList!,
-                onChangedFn: ((CircleAvatar, Family)? value) {
-                  setState(() {
-                    personB = value!.$2;
-                  });
-                },
-              )
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Icon(
+                Icons.swap_vert_rounded,
+                size: 36,
+                color: colorScheme.primary,
+              ),
             ),
-            OutlinedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => TreeViewScreen(graphFamily: findRelationship())), //TODO debug between tree and paint
-                );
-              },
-              child: Text(AppLocalizations.of(context)!.showTree,
-                      style: theme.bodyNormal)),
+
+            // Person B card
+            _PersonSelectorCard(
+              label: '2',
+              familyList: _familyList!,
+              onChanged: (value) => setState(() { personB = value?.$2; }),
+              colorScheme: colorScheme,
+              theme: theme,
+            ),
+
+            const SizedBox(height: 28),
+
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          TreeViewScreen(graphFamily: findRelationship()),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.account_tree_outlined),
+                label: Text(AppLocalizations.of(context)!.showTree,
+                    style: theme.bodyNormal),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
-      )
+      ),
     );
-    //   }
-    // }
-    // );
   }
 
-  
-  
-  // Future grabFamily(String familyName, bool maleOnly) async {
-  //   if (familyName == '') {
-  //     return null;
-  //   }
-
-  //   DbServices.instance.getFamily(familyName, maleOnly: maleOnly).then((value) {
-  //     setState(() {
-  //       familyList = value;
-  //     });
-  //   });
-  //   return familyList;
-  // }
-
-  /* 
-  Responsible for finding relationship betweeen two Family objects
-  Outputs a list of Family containing all Family objects between the two
-  inputs
+  /*
+  Responsible for finding relationship between two Family objects.
+  Outputs a list of Family containing all nodes on the path between them
+  through their lowest common ancestor (LCA).
   */
   List<Family> findRelationship() {
-    List<Family> ancestorsA = [];
-    List<Family> ancestorsB = [];
-    Family currentA = personA!;
-    Family currentB = personB!;
-    bool parentInB = false;
-    bool parentInA = false;
+    if (personA == null || personB == null) return [];
 
-    // Isolate first name since Avatar dropdown contained full name
-    currentA.name = currentA.name!.split(' ')[0];
-    currentB.name = currentB.name!.split(' ')[0];
-    
-
-    // TODO Add a condition where one of the people is the root of the family
-    while(currentA != _familyList![0] || currentB != _familyList![0]) {
-      if(currentA != _familyList![0]) { // If not root of family
-        ancestorsA.add(currentA);
-        Family test = ancestorsB.firstWhere((p) => p.id == currentA.parent, orElse: () {return Family(id: -1);});
-        // Family test2 = Family(id: -1);
-        parentInB = test.id != -1;
-      
-        if (parentInB) {
-          int index = ancestorsB.indexWhere((p) => p.id == currentA.parent);
-          // ModFamilyList result = ModFamilyList(root: ancestorsB[index], children: [ancestorsA, ancestorsB.sublist(0, index)]);
-          List<Family> result = [];
-          result.addAll(ancestorsA);
-          result.addAll(ancestorsB.sublist(0, index+1));
-          return result;
-        }
-        currentA = _familyList!.firstWhere((p) => p.id == currentA.parent);
+    // Build ancestor chain from a person up to root (inclusive).
+    // Returns copies with first name only (avoids mutating the stored list).
+    List<Family> ancestorChain(Family start) {
+      final chain = <Family>[];
+      Family current = start;
+      while (true) {
+        chain.add(current.copy(name: current.name?.split(' ')[0]));
+        if (current.parent == null) break;
+        final matches = _familyList!.where((p) => p.id == current.parent).toList();
+        if (matches.isEmpty) break;
+        current = matches.first;
       }
+      return chain;
+    }
 
-      if (currentB != _familyList![0]) {
-        ancestorsB.add(currentB);
-        Family test = ancestorsA.firstWhere((p) => p.id == currentB.parent, orElse: () {
-                  return Family(id: -1);
-                });
-        parentInA = test.id != -1;
-            
+    final chainA = ancestorChain(personA!);
+    final chainB = ancestorChain(personB!);
 
-        if (parentInA) {
-          int index = ancestorsA.indexWhere((p) => p.id == currentB.parent);
-          // ModFamilyList result = ModFamilyList(
-          //     root: ancestorsA[index],
-          //     children: [ancestorsA.sublist(0, index), ancestorsB]);
-          List<Family> result = [];
-          result.addAll(ancestorsB);
-          result.addAll(ancestorsA.sublist(0, index + 1));
-          return result;
-        }
-        currentB = _familyList!.firstWhere((p) => p.id == currentB.parent);
+    // Find LCA: first node in chainB that also appears in chainA
+    for (int i = 0; i < chainB.length; i++) {
+      final indexInA = chainA.indexWhere((p) => p.id == chainB[i].id);
+      if (indexInA != -1) {
+        // Path: A → ... → LCA ← ... ← B
+        // chainA[0..indexInA] covers A's side including LCA
+        // chainB[0..i-1] covers B's side excluding LCA (already included)
+        final result = <Family>[];
+        result.addAll(chainA.sublist(0, indexInA + 1));
+        result.addAll(chainB.sublist(0, i));
+        return result;
       }
     }
+
     return [];
   }
+}
 
-  
-  
+class _PersonSelectorCard extends StatelessWidget {
+  final String label;
+  final List<Family> familyList;
+  final ValueChanged<(CircleAvatar, Family)?> onChanged;
+  final ColorScheme colorScheme;
+  final ThemeProvider theme;
+
+  const _PersonSelectorCard({
+    required this.label,
+    required this.familyList,
+    required this.onChanged,
+    required this.colorScheme,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 0,
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.person_outline, color: colorScheme.primary),
+                const SizedBox(width: 8),
+                Text(label, style: theme.bodyBold),
+              ],
+            ),
+            const SizedBox(height: 10),
+            DropdownAvatarFamily(
+              familyList: familyList,
+              onChangedFn: onChanged,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

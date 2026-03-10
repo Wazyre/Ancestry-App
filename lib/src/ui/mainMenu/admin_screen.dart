@@ -9,14 +9,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'db_services.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-// TODO add form details that appear after selecting dropdown use selectedPerson
+import 'package:ancestry_app/l10n/app_localizations.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
 
-  
   @override
   State<AdminScreen> createState() => _AdminState();
 }
@@ -24,19 +21,19 @@ class AdminScreen extends StatefulWidget {
 class _AdminState extends State<AdminScreen> {
 
   List<Family>? familyList;
-  String? _familyName; //=  settings.savedSettings.tabFamily; // TODO uncomment this when fixed pulling family name logic 'العبدالجليل';
-  Family? _selectedPerson; 
+  String? _familyName;
+  Family? _selectedPerson;
 
   final _editFormKey = GlobalKey<FormState>();
 
-  TextEditingController _nameController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
   int? _parentController;
-  TextEditingController _yearBornController = TextEditingController();
-  TextEditingController _yearDiedController = TextEditingController();
+  final TextEditingController _yearBornController = TextEditingController();
+  final TextEditingController _yearDiedController = TextEditingController();
   String? _imgUrlController;
   File? _portraitImg;
   int _genderController = 1;
-  TextEditingController _bioController = TextEditingController();
+  final TextEditingController _bioController = TextEditingController();
 
   bool _visDropEdit = false;
   bool _visFormEdit = false;
@@ -47,312 +44,359 @@ class _AdminState extends State<AdminScreen> {
   final double _smallSpacing = 8.0;
 
   @override
-  void initState() {
-    super.initState();
-    
-    // DbServices db = DbServices.instance;
-
-    // family = await db.getFamily();
-  }
-
-  // TODO use WillPopScope here to define going back to main menu instead of login
-  @override
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context);
     final settings = Provider.of<SettingsProvider>(context);
-    // final ScrollController scrollController = ScrollController();
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return FutureBuilder(future: grabFamily(settings), 
-    builder: (context, snapshot) {
-      if (!snapshot.hasData) {
-        return Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-              ],
-            ),
-          ),
-        ); 
-      }
-      else {
-        return Scaffold( 
-          body: NestedScrollView(
-            headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-              return [
-                SliverAppBar()
-              ];
-            }, 
-            body: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: ListView(
-              // mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                OutlinedButton(
-                onPressed: () {
-                  setState(() {
-                    _visDropEdit = false;
-                    _visFormEdit = false;
-                    _visFormAdd = true;
-                    _visImageAdd = false;
-                    _genderController = 1;
-                  });
-                },
-                child: Text(AppLocalizations.of(context)!.adminAddPerson,
-                                style: theme.bodyNormal)
-                ),
-                OutlinedButton(
-                  onPressed: () {
-                    setState(() {
-                      _visFormAdd = false;
-                      _visDropEdit = true;
-                      _visImageAdd = false;
-                    });
-                  }, 
-                  child: Text(AppLocalizations.of(context)!.adminEditPerson,
-                                  style: theme.bodyNormal)
-                ),
+    return FutureBuilder(
+      future: grabFamily(settings),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-                // Dropdown to edit person
-                Visibility(
-                  visible: _visDropEdit,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: DropdownAvatarFamily(
-                      familyList: familyList!, 
-                      onChangedFn: ((CircleAvatar, Family)? value) {
-                        setState(() {
-                          _selectedPerson = value!.$2;
-                          _nameController.text = _selectedPerson!.name!.split(' ')[0]; // Isolate first name
-                          _genderController = _selectedPerson!.gender!;
-                          _yearBornController.text = _selectedPerson!.yearBorn.toString();
-                          _yearDiedController.text = _selectedPerson!.yearDied.toString();
-                          _parentController = _selectedPerson!.parent;
-                          _bioController.text = _selectedPerson!.bio ?? '';
-                          _visFormEdit = true;
-                        });
-                      },
-                    ),
-                  )
-                ),
-                        
-                // Editing Form
-                Visibility(
-                  visible: _visFormEdit || _visFormAdd,
-                  child: Form(
-                    key: _editFormKey, 
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) {
+            if (!didPop) {
+              Navigator.popUntil(context, (route) => route.isFirst);
+            }
+          },
+          child: Scaffold(
+            body: NestedScrollView(
+              headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+                return [
+                  SliverAppBar(
+                    title: Text(_familyName ?? '',
+                        style: const TextStyle(fontFamily: 'ArefRuqaa')),
+                    centerTitle: true,
+                    floating: true,
+                    snap: true,
+                  ),
+                ];
+              },
+              body: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: ListView(
+                  children: [
+                    // Add / Edit toggle row
+                    const SizedBox(height: 8),
+                    Row(
                       children: [
-                        TextFormField(
-                          controller: _nameController,
-                          decoration:
-                              InputDecoration(label: Text(AppLocalizations.of(context)!.adminFormName,
-                                                style: theme.bodyNormal)),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return AppLocalizations.of(context)!.adminFormNameVal;
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: _bigSpacing),
-                        Row(
-                          children: [
-                            Expanded(child: Text(AppLocalizations.of(context)!.adminFormGender,
-                                                  style: theme.bodyNormal)),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: RadioListTile(
-                                title: Text(AppLocalizations.of(context)!.adminFormMale,
-                                                    style: theme.bodyNormal),
-                                value: 1, 
-                                groupValue: _genderController, 
-                                onChanged: (int? value) {
-                                  setState(() {
-                                    _genderController = value!;
-                                  });
-                                }
-                              ),
-                            ),
-                            Expanded(
-                              child: RadioListTile(
-                                title: Text(AppLocalizations.of(context)!.adminFormFemale,
-                                                    style: theme.bodyNormal),
-                                value: 0,
-                                groupValue: _genderController,
-                                onChanged: (int? value) {
-                                  setState(() {
-                                    _genderController = value!;
-                                  });
-                                }),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: _smallSpacing),
-                        TextFormField(
-                          controller: _yearBornController,
-                          decoration:
-                              InputDecoration(label: Text(AppLocalizations.of(context)!.adminFormYearBorn,
-                                                style: theme.bodyNormal)),
-                          keyboardType: TextInputType.number,
-                          inputFormatters: <TextInputFormatter>[
-                            FilteringTextInputFormatter.digitsOnly
-                          ],
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return AppLocalizations.of(context)!.adminFormYearBornVal;
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: _bigSpacing),
-                        TextFormField(
-                          controller: _yearDiedController,
-                          decoration:
-                              InputDecoration(label: Text(AppLocalizations.of(context)!.adminFormYearDied,
-                                                style: theme.bodyNormal)),
-                          keyboardType: TextInputType.number,
-                          inputFormatters: <TextInputFormatter>[
-                            FilteringTextInputFormatter.digitsOnly
-                          ],
-                          validator: (value) {
-                            if (int.parse(value!) < int.parse(_yearBornController.text)) {
-                              return 'lease enter the ye';
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: _bigSpacing),
-                        Row(
-                          children: [
-                            Text(AppLocalizations.of(context)!.adminFormParent,
-                                              style: theme.bodyNormal),
-                          ],
-                        ),
-                        DropdownAvatarFamily(
-                          // context: context, 
-                          // TODO fix initial parent if editing
-                          familyList: familyList!, 
-                          maleOnly: true,
-                          initalFamily: _parentController,
-                          onChangedFn: ((CircleAvatar, Family)? value) {
-                            setState(() {
-                              _parentController = value!.$2.id;
-                            });
-                          },
-                        ),
-                        SizedBox(height: _bigSpacing),
-                        TextFormField(
-                          controller: _bioController,
-                          decoration:
-                              InputDecoration(label: Text(AppLocalizations.of(context)!.adminFormBio,
-                                                style: theme.bodyNormal)),
-                          keyboardType: TextInputType.multiline,
-                          maxLines: null,
-                          // validator: (value) {
-                          //   if (value == null || value.isEmpty) {
-                          //     return 'Please a first name';
-                          //   }
-                          //   return null;
-                          // },
-                        ),
-                        SizedBox(height: _bigSpacing),
-                        Padding(
-                          padding:
-                              const EdgeInsets.only(left: 8.0),
-                          child: ImageFormField(
-                              validator: (File? file) {
-                            return '';
-                          }, onChanged: (File file) {
-                            // TODO upload picture after submitting
-                            setState(() {
-                              _portraitImg = file;
-                              _visImageAdd = true;
-                            });
-                          }),
-                        ),
-                        SizedBox(height: _bigSpacing),
-                        Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 30.0),
-                              child: Text(AppLocalizations.of(context)!.adminFormImageCurrent,
-                                                style: theme.bodyNormal),
-                            ),
-                            Expanded(flex: 2, child: buildImage(_imgUrlController, null)),
-                            Spacer(),
-                          ],
-                        ),
-                        SizedBox(height: _bigSpacing), // TODO remove if trailing
-                        Visibility(
-                          visible: _visImageAdd,
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 30.0),
-                                child: Text(AppLocalizations.of(context)!.adminFormImageCurrent,
-                                                  style: theme.bodyNormal),
-                              ),
-                              buildImage(null, _portraitImg),
-                            ],
+                        Expanded(
+                          child: FilledButton.tonal(
+                            onPressed: () {
+                              setState(() {
+                                _visDropEdit = false;
+                                _visFormEdit = false;
+                                _visFormAdd = true;
+                                _visImageAdd = false;
+                                _genderController = 1;
+                              });
+                            },
+                            child: Text(AppLocalizations.of(context)!.adminAddPerson,
+                                style: theme.bodyNormal),
                           ),
                         ),
-                        SizedBox(height: _bigSpacing),
-                        OutlinedButton(
-                          onPressed: () {
-                            uploadData(_visFormEdit ? 'edit' : 'add');
-                          }, 
-                          child: Text(AppLocalizations.of(context)!.submit,
-                                              style: theme.bodyNormal))
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              setState(() {
+                                _visFormAdd = false;
+                                _visDropEdit = true;
+                                _visImageAdd = false;
+                              });
+                            },
+                            child: Text(AppLocalizations.of(context)!.adminEditPerson,
+                                style: theme.bodyNormal),
+                          ),
+                        ),
                       ],
-                    )
-                  )
-                )
-              ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Dropdown to select person for editing
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: _visDropEdit
+                          ? Padding(
+                              key: const ValueKey('edit-dropdown'),
+                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              child: DropdownAvatarFamily(
+                                familyList: familyList!,
+                                onChangedFn: ((CircleAvatar, Family)? value) {
+                                  setState(() {
+                                    _selectedPerson = value!.$2;
+                                    _nameController.text = _selectedPerson!.name!.split(' ')[0];
+                                    _genderController = _selectedPerson!.gender!;
+                                    _yearBornController.text = _selectedPerson!.yearBorn.toString();
+                                    _yearDiedController.text = _selectedPerson!.yearDied.toString();
+                                    _parentController = _selectedPerson!.parent;
+                                    _bioController.text = _selectedPerson!.bio ?? '';
+                                    _visFormEdit = true;
+                                  });
+                                },
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+
+                    // Form
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 250),
+                      child: (_visFormEdit || _visFormAdd)
+                          ? Form(
+                              key: ValueKey('form-${_visFormEdit ? 'edit' : 'add'}'),
+                              child: Form(
+                                key: _editFormKey,
+                                child: Column(
+                                  children: [
+                                    // Personal info card
+                                    _FormCard(
+                                      colorScheme: colorScheme,
+                                      child: Column(
+                                        children: [
+                                          TextFormField(
+                                            controller: _nameController,
+                                            decoration: InputDecoration(
+                                              label: Text(AppLocalizations.of(context)!.adminFormName,
+                                                  style: theme.bodyNormal),
+                                              border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(10)),
+                                            ),
+                                            validator: (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return AppLocalizations.of(context)!.adminFormNameVal;
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                          SizedBox(height: _bigSpacing),
+                                          Align(
+                                            alignment: AlignmentDirectional.centerStart,
+                                            child: Text(AppLocalizations.of(context)!.adminFormGender,
+                                                style: theme.bodyNormal),
+                                          ),
+                                          RadioGroup<int>(
+                                            groupValue: _genderController,
+                                            onChanged: (value) {
+                                              if (value != null) setState(() { _genderController = value; });
+                                            },
+                                            child: Row(
+                                              children: [
+                                                Expanded(child: RadioListTile(
+                                                  title: Text(AppLocalizations.of(context)!.adminFormMale,
+                                                      style: theme.bodyNormal),
+                                                  value: 1,
+                                                )),
+                                                Expanded(child: RadioListTile(
+                                                  title: Text(AppLocalizations.of(context)!.adminFormFemale,
+                                                      style: theme.bodyNormal),
+                                                  value: 0,
+                                                )),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    SizedBox(height: _smallSpacing),
+
+                                    // Dates card
+                                    _FormCard(
+                                      colorScheme: colorScheme,
+                                      child: Column(
+                                        children: [
+                                          TextFormField(
+                                            controller: _yearBornController,
+                                            decoration: InputDecoration(
+                                              label: Text(AppLocalizations.of(context)!.adminFormYearBorn,
+                                                  style: theme.bodyNormal),
+                                              border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(10)),
+                                            ),
+                                            keyboardType: TextInputType.number,
+                                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                            validator: (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return AppLocalizations.of(context)!.adminFormYearBornVal;
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                          SizedBox(height: _bigSpacing),
+                                          TextFormField(
+                                            controller: _yearDiedController,
+                                            decoration: InputDecoration(
+                                              label: Text(AppLocalizations.of(context)!.adminFormYearDied,
+                                                  style: theme.bodyNormal),
+                                              border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(10)),
+                                            ),
+                                            keyboardType: TextInputType.number,
+                                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                            validator: (value) {
+                                              if (value == null || value.isEmpty) return null;
+                                              final yearDied = int.tryParse(value);
+                                              final yearBorn = int.tryParse(_yearBornController.text);
+                                              if (yearDied != null && yearBorn != null && yearDied < yearBorn) {
+                                                return AppLocalizations.of(context)!.adminFormYearDiedVal;
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    SizedBox(height: _smallSpacing),
+
+                                    // Parent card
+                                    _FormCard(
+                                      colorScheme: colorScheme,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(AppLocalizations.of(context)!.adminFormParent,
+                                              style: theme.bodyNormal),
+                                          const SizedBox(height: 8),
+                                          DropdownAvatarFamily(
+                                            familyList: familyList!,
+                                            maleOnly: true,
+                                            initalFamily: _parentController,
+                                            onChangedFn: ((CircleAvatar, Family)? value) {
+                                              setState(() {
+                                                _parentController = value!.$2.id;
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    SizedBox(height: _smallSpacing),
+
+                                    // Bio card
+                                    _FormCard(
+                                      colorScheme: colorScheme,
+                                      child: TextFormField(
+                                        controller: _bioController,
+                                        decoration: InputDecoration(
+                                          label: Text(AppLocalizations.of(context)!.adminFormBio,
+                                              style: theme.bodyNormal),
+                                          border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(10)),
+                                        ),
+                                        keyboardType: TextInputType.multiline,
+                                        maxLines: null,
+                                      ),
+                                    ),
+
+                                    SizedBox(height: _smallSpacing),
+
+                                    // Image card
+                                    _FormCard(
+                                      colorScheme: colorScheme,
+                                      child: Column(
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 8.0),
+                                            child: ImageFormField(
+                                              validator: (File? file) { return ''; },
+                                              onChanged: (File file) {
+                                                setState(() {
+                                                  _portraitImg = file;
+                                                  _visImageAdd = true;
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                          SizedBox(height: _bigSpacing),
+                                          Row(
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.only(left: 30.0),
+                                                child: Text(AppLocalizations.of(context)!.adminFormImageCurrent,
+                                                    style: theme.bodyNormal),
+                                              ),
+                                              Expanded(flex: 2, child: buildImage(_imgUrlController, null)),
+                                              const Spacer(),
+                                            ],
+                                          ),
+                                          if (_visImageAdd) ...[
+                                            SizedBox(height: _bigSpacing),
+                                            Row(
+                                              children: [
+                                                Padding(
+                                                  padding: const EdgeInsets.only(left: 30.0),
+                                                  child: Text(AppLocalizations.of(context)!.adminFormImageNew,
+                                                      style: theme.bodyNormal),
+                                                ),
+                                                buildImage(null, _portraitImg),
+                                              ],
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+
+                                    SizedBox(height: _bigSpacing),
+
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: FilledButton(
+                                        onPressed: () {
+                                          uploadData(_visFormEdit ? 'edit' : 'add');
+                                        },
+                                        style: FilledButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(vertical: 14),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                        ),
+                                        child: Text(AppLocalizations.of(context)!.submit,
+                                            style: theme.bodyNormal),
+                                      ),
+                                    ),
+
+                                    SizedBox(height: _bigSpacing),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            )
-        )
+          ),
         );
-      }
-    }); 
+      },
+    );
   }
 
-  /* 
-  Grabs selected family from database
-  */
   Future grabFamily(SettingsProvider prov) async {
-    // if (familyName == '') {
-    //   return null;
-    // }
+    final familyName = DbServices.instance.adminFamilyName ?? prov.savedSettings.tabFamily;
 
-    DbServices.instance.getFamily(prov.savedSettings.tabFamily).then((value) {
-      setState(() {
-        familyList = value;
-      });
+    DbServices.instance.getFamily(familyName).then((value) {
+      if (mounted) setState(() { familyList = value; });
     });
 
-    final settings = Provider.of<SettingsProvider>(context);
-    setState(() {
-      _familyName = settings.savedSettings.tabFamily;
-    });
+    if (mounted) setState(() { _familyName = familyName; });
 
     return familyList;
   }
 
-  /*
-  Takes in an image url and outputs a Circle Avatar version
-  of it
-  */
   Widget buildImage(String? imgUrl, File? file) {
     if (imgUrl != null) {
       return CircleAvatar(
-        radius: 80.0, 
+        radius: 80.0,
         backgroundImage: NetworkImage(imgUrl),
         child: GestureDetector(
           onTap: () async {
@@ -360,59 +404,80 @@ class _AdminState extends State<AdminScreen> {
                 context: context,
                 builder: (_) => ImagePopup(imgUrl: imgUrl));
           },
-        ),  
+        ),
       );
-    }
-    else if (file != null) {
+    } else if (file != null) {
       return CircleAvatar(
         radius: 80.0,
         backgroundImage: Image.file(file).image,
         child: GestureDetector(
           onTap: () async {
             await showDialog(
-                context: context, builder: (_) => ImagePopup(imgUrl: imgUrl));
+                context: context, builder: (_) => ImagePopup(imgUrl: null));
           },
         ),
       );
-    }
-    else {
+    } else {
       return CircleAvatar(
-        radius: 80.0, 
-        backgroundImage: AssetImage('images/blank.png'),
+        radius: 80.0,
+        backgroundColor: Color.fromARGB(0, 0, 0, 0),
+        backgroundImage: const AssetImage('assets/profile.png'),
         child: GestureDetector(
           onTap: () async {
             await showDialog(
                 context: context,
-                builder: (_) => ImagePopup(imgUrl: 'images/blank.png'));
+                builder: (_) => ImagePopup(imgUrl: 'assets/profile.png'));
           },
-        ),    
+        ),
       );
     }
   }
 
-  /*
-  Uploads additions and edits to family database
-  TODO Reformat to settled database format
-  */
+  Future<String?> _persistImage(File file) async {
+    return await DbServices.instance.uploadImage(file);
+  }
+
   void uploadData(String mode) async {
-    // TODO make input validation checks
+    String? savedImgUrl = _imgUrlController;
+    if (_portraitImg != null) {
+      savedImgUrl = await _persistImage(_portraitImg!);
+    }
+
     Family newFamily = Family(
-      id: _selectedPerson?.id ?? (await DbServices.instance.maxId(_familyName!) + 1),
+      id: mode == 'edit' ? _selectedPerson!.id : null,
       bio: _bioController.text,
       name: _nameController.text,
       parent: _parentController,
       gender: _genderController,
       yearBorn: int.parse(_yearBornController.text),
-      yearDied: int.parse(_yearDiedController.text),
-      imgUrl: _imgUrlController
+      yearDied: int.tryParse(_yearDiedController.text),
+      imgUrl: savedImgUrl,
     );
 
     if (mode == 'add') {
       DbServices.instance.insert(_familyName!, newFamily);
-
-    }
-    else if (mode == 'edit') {
+    } else if (mode == 'edit') {
       DbServices.instance.update(_familyName!, newFamily);
     }
+  }
+}
+
+class _FormCard extends StatelessWidget {
+  final Widget child;
+  final ColorScheme colorScheme;
+
+  const _FormCard({required this.child, required this.colorScheme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 0,
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(14.0),
+        child: child,
+      ),
+    );
   }
 }
