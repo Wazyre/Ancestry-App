@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:ancestry_app/src/ui/mainMenu/family_history_editor.dart';
 import 'package:ancestry_app/src/ui/base/dropdown_avatar_family.dart';
 import 'package:ancestry_app/src/ui/base/image_form_field.dart';
 import 'package:ancestry_app/src/ui/base/image_popup.dart';
@@ -39,6 +40,12 @@ class _AdminState extends State<AdminScreen> {
   bool _visFormEdit = false;
   bool _visFormAdd = false;
   bool _visImageAdd = false;
+  bool _visFormQuick = false;
+  final _quickFormKey = GlobalKey<FormState>();
+  final TextEditingController _quickNameController = TextEditingController();
+  int _quickGenderController = 1;
+  int? _quickParentController;
+  final TextEditingController _quickYearBornController = TextEditingController();
 
   final double _bigSpacing = 16.0;
   final double _smallSpacing = 8.0;
@@ -71,7 +78,7 @@ class _AdminState extends State<AdminScreen> {
                 return [
                   SliverAppBar(
                     title: Text(_familyName ?? '',
-                        style: const TextStyle(fontFamily: 'ArefRuqaa')),
+                        style: const TextStyle(fontFamily: 'Monadi')),
                     centerTitle: true,
                     floating: true,
                     snap: true,
@@ -94,6 +101,7 @@ class _AdminState extends State<AdminScreen> {
                                 _visFormEdit = false;
                                 _visFormAdd = true;
                                 _visImageAdd = false;
+                                _visFormQuick = false;
                                 _genderController = 1;
                               });
                             },
@@ -109,6 +117,7 @@ class _AdminState extends State<AdminScreen> {
                                 _visFormAdd = false;
                                 _visDropEdit = true;
                                 _visImageAdd = false;
+                                _visFormQuick = false;
                               });
                             },
                             child: Text(AppLocalizations.of(context)!.adminEditPerson,
@@ -116,6 +125,48 @@ class _AdminState extends State<AdminScreen> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        icon: const Icon(Icons.bolt),
+                        label: Text(AppLocalizations.of(context)!.adminQuickAdd),
+                        onPressed: () {
+                          setState(() {
+                            _visDropEdit = false;
+                            _visFormEdit = false;
+                            _visFormAdd = false;
+                            _visImageAdd = false;
+                            _visFormQuick = true;
+                            _quickGenderController = 1;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // Edit family biography with rich text editor
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.menu_book_outlined),
+                        label: Text(AppLocalizations.of(context)!.familyBio),
+                        onPressed: () async {
+                          final existingBio = await DbServices.instance
+                              .getFamilyBio(_familyName!);
+                          if (context.mounted) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => FamilyHistoryEditor(
+                                  familyName: _familyName!,
+                                  initialContent: existingBio,
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                      ),
                     ),
                     const SizedBox(height: 8),
 
@@ -371,6 +422,111 @@ class _AdminState extends State<AdminScreen> {
                             )
                           : const SizedBox.shrink(),
                     ),
+
+                    // Quick Add form
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 250),
+                      child: _visFormQuick
+                          ? Form(
+                              key: _quickFormKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _FormCard(
+                                    colorScheme: colorScheme,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        TextFormField(
+                                          controller: _quickNameController,
+                                          decoration: InputDecoration(
+                                            label: Text(AppLocalizations.of(context)!.adminFormName,
+                                                style: theme.bodyNormal),
+                                            border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(10)),
+                                          ),
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return AppLocalizations.of(context)!.adminFormNameVal;
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Row(
+                                          children: [
+                                            Text(AppLocalizations.of(context)!.adminFormGender,
+                                                style: theme.bodyNormal),
+                                            const Spacer(),
+                                            SegmentedButton<int>(
+                                              segments: [
+                                                ButtonSegment(value: 1, label: Text(AppLocalizations.of(context)!.adminFormMale)),
+                                                ButtonSegment(value: 0, label: Text(AppLocalizations.of(context)!.adminFormFemale)),
+                                              ],
+                                              selected: {_quickGenderController},
+                                              onSelectionChanged: (values) => setState(() => _quickGenderController = values.first),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 12),
+                                        TextFormField(
+                                          controller: _quickYearBornController,
+                                          decoration: InputDecoration(
+                                            label: Text(AppLocalizations.of(context)!.adminFormYearBorn,
+                                                style: theme.bodyNormal),
+                                            border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(10)),
+                                          ),
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return AppLocalizations.of(context)!.adminFormYearBornVal;
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Text(AppLocalizations.of(context)!.adminFormParent,
+                                            style: theme.bodyNormal),
+                                        const SizedBox(height: 8),
+                                        DropdownAvatarFamily(
+                                          familyList: familyList!,
+                                          maleOnly: true,
+                                          initalFamily: _quickParentController,
+                                          onChangedFn: ((CircleAvatar, Family)? value) {
+                                            setState(() {
+                                              _quickParentController = value!.$2.id;
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: () => setState(() => _visFormQuick = false),
+                                          child: Text(AppLocalizations.of(context)!.adminQuickAddDone),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: FilledButton(
+                                          onPressed: _quickSave,
+                                          child: Text(AppLocalizations.of(context)!.adminQuickAddSaveAnother),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                ],
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
                   ],
                 ),
               ),
@@ -435,6 +591,25 @@ class _AdminState extends State<AdminScreen> {
 
   Future<String?> _persistImage(File file) async {
     return await DbServices.instance.uploadImage(file);
+  }
+
+  Future<void> _quickSave() async {
+    if (!(_quickFormKey.currentState?.validate() ?? false)) return;
+    final family = Family(
+      name: _quickNameController.text.trim(),
+      gender: _quickGenderController,
+      yearBorn: int.parse(_quickYearBornController.text),
+      parent: _quickParentController,
+    );
+    await DbServices.instance.insert(_familyName!, family);
+    final updated = await DbServices.instance.getFamily(_familyName!);
+    if (mounted) {
+      setState(() {
+        familyList = updated;
+        _quickNameController.clear();
+        _quickYearBornController.clear();
+      });
+    }
   }
 
   void uploadData(String mode) async {

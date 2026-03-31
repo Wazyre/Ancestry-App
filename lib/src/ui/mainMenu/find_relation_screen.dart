@@ -75,7 +75,7 @@ class _FindRelationState extends State<FindRelationScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          TreeViewScreen(graphFamily: findRelationship()),
+                          TreeViewScreen(graphFamily: findRelationship(), isRelationPath: true),
                     ),
                   );
                 },
@@ -126,12 +126,12 @@ class _FindRelationState extends State<FindRelationScreen> {
     for (int i = 0; i < chainB.length; i++) {
       final indexInA = chainA.indexWhere((p) => p.id == chainB[i].id);
       if (indexInA != -1) {
-        // Path: A → ... → LCA ← ... ← B
-        // chainA[0..indexInA] covers A's side including LCA
-        // chainB[0..i-1] covers B's side excluding LCA (already included)
+        // Path: A → ... → LCA → ... → B
+        // chainA[0..indexInA] = A's side going up to LCA (inclusive)
+        // chainB[0..i-1] = B's side going up to (but not including) LCA — reversed so it goes LCA → B
         final result = <Family>[];
         result.addAll(chainA.sublist(0, indexInA + 1));
-        result.addAll(chainB.sublist(0, i));
+        result.addAll(chainB.sublist(0, i).reversed);
         return result;
       }
     }

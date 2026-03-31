@@ -46,7 +46,11 @@ dependencies:
   image_picker: ^1.1.2
   flutter_svg: ^2.0.17
   url_launcher: ^6.3.1
+  pdf: ^3.10.8
+  printing: ^5.13.2
+  share_plus: ^10.1.4
   google_fonts: ^6.2.1
+  flutter_quill: ^11.5.0
 
 dev_dependencies:
   flutter_test:
@@ -88,6 +92,9 @@ flutter:
         - asset: assets/fonts/ArefRuqaa-Regular.ttf
         - asset: assets/fonts/ArefRuqaa-Bold.ttf
           weight: 700
+    - family: Monadi
+      fonts:
+        - asset: assets/fonts/Monadi.ttf
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

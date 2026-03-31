@@ -75,7 +75,7 @@ class _OptionsState extends State<OptionsScreen> {
             ),
           ),
 
-          _SectionHeader(title: AppLocalizations.of(context)!.optDarkModeLabel),
+          _SectionHeader(title: AppLocalizations.of(context)!.extraSettings),
           _SettingsCard(
             child: CheckboxListTile(
               title: Text(AppLocalizations.of(context)!.optMalesOnlyLabel),
@@ -106,7 +106,7 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         title,
         style: TextStyle(
-          fontFamily: 'ArefRuqaa',
+          fontFamily: 'Monadi',
           fontSize: 15,
           fontWeight: FontWeight.bold,
           color: colorScheme.primary,

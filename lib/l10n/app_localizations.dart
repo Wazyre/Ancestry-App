@@ -104,6 +104,24 @@ abstract class AppLocalizations {
   /// **'Please select a person'**
   String get selectPersonValidateErr;
 
+  /// Placeholder text for the global person search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search across all families'**
+  String get globalSearchHint;
+
+  /// Message shown when global search returns no matches
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get searchNoResults;
+
+  /// Option to view a found person in their family tree
+  ///
+  /// In en, this message translates to:
+  /// **'View in family tree'**
+  String get searchViewTree;
+
   /// Label for main menu select
   ///
   /// In en, this message translates to:
@@ -157,6 +175,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Contact family admin'**
   String get familyContactAdmin;
+
+  /// Button text for viewing the family biography
+  ///
+  /// In en, this message translates to:
+  /// **'Family History'**
+  String get familyBio;
+
+  /// Placeholder text when family biography is empty
+  ///
+  /// In en, this message translates to:
+  /// **'No biography has been added for this family yet.'**
+  String get familyBioEmpty;
+
+  /// Placeholder text in the family history rich text editor
+  ///
+  /// In en, this message translates to:
+  /// **'Write the family history here…'**
+  String get familyBioEditorHint;
+
+  /// Tooltip for the save button in the family history editor
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get familyBioEditorSave;
+
+  /// Tooltip for the insert image button in the family history editor
+  ///
+  /// In en, this message translates to:
+  /// **'Insert Image'**
+  String get familyBioEditorInsertImage;
 
   /// Modal title when no admin phone is registered
   ///
@@ -227,7 +275,7 @@ abstract class AppLocalizations {
   /// Label of radio list for number of names
   ///
   /// In en, this message translates to:
-  /// **'Number of Names:'**
+  /// **'Number of Names'**
   String get optNameLengthLabel;
 
   /// Radio list option 1
@@ -251,8 +299,14 @@ abstract class AppLocalizations {
   /// Label for choosing theme mode radio list
   ///
   /// In en, this message translates to:
-  /// **'Theme Mode:'**
+  /// **'Theme Mode'**
   String get optDarkModeLabel;
+
+  /// Section header for miscellaneous options in the settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Extra Settings'**
+  String get extraSettings;
 
   /// Label for males only checkbox
   ///
@@ -263,7 +317,7 @@ abstract class AppLocalizations {
   /// Label for text size radio list
   ///
   /// In en, this message translates to:
-  /// **'Text Size:'**
+  /// **'Text Size'**
   String get optTextSizeLabel;
 
   /// Text size option: use system setting
@@ -337,6 +391,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit Person'**
   String get adminEditPerson;
+
+  /// Button to enter quick add mode
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Add'**
+  String get adminQuickAdd;
+
+  /// Button to exit quick add mode
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get adminQuickAddDone;
+
+  /// Button to save quick add entry and add another
+  ///
+  /// In en, this message translates to:
+  /// **'Save & Add Another'**
+  String get adminQuickAddSaveAnother;
 
   /// Form field label for name field
   ///
@@ -439,6 +511,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Year died must be after year born'**
   String get adminFormYearDiedVal;
+
+  /// Tab label for the tree view in relation results
+  ///
+  /// In en, this message translates to:
+  /// **'Tree'**
+  String get treeTabTree;
+
+  /// Tab label for the path view in relation results
+  ///
+  /// In en, this message translates to:
+  /// **'Path'**
+  String get treeTabPath;
+
+  /// Tab label for the list view in relation results
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get treeTabList;
+
+  /// Relationship connector label going down the tree
+  ///
+  /// In en, this message translates to:
+  /// **'is parent of'**
+  String get relationIsParentOf;
+
+  /// Relationship connector label going up the tree
+  ///
+  /// In en, this message translates to:
+  /// **'is child of'**
+  String get relationIsChildOf;
+
+  /// Badge label for the shared ancestor in a relation path
+  ///
+  /// In en, this message translates to:
+  /// **'Common Ancestor'**
+  String get relationCommonAncestor;
 }
 
 class _AppLocalizationsDelegate

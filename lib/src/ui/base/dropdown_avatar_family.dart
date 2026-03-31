@@ -98,6 +98,12 @@ class _DropdownAvatarFamilyState extends State<DropdownAvatarFamily> {
           title: Text(selectedItem?.$2.name! ?? ''),
         );
       },
+      filterFn: (item, filter) {
+        final normalized = DbServices.normalizeArabic(
+            item.$2.name?.toLowerCase() ?? '');
+        final normalizedFilter = DbServices.normalizeArabic(filter.toLowerCase());
+        return normalized.contains(normalizedFilter);
+      },
       popupProps: PopupProps.menu(
         itemBuilder: (context, item, isDisabled, isSelected) {
           return Padding(

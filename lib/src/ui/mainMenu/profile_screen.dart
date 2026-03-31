@@ -6,6 +6,7 @@ import 'package:ancestry_app/src/ui/mainMenu/db_services.dart';
 import 'package:flutter/material.dart';
 import 'package:ancestry_app/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ProfileScreen extends StatefulWidget {
   final Family person;
@@ -42,8 +43,15 @@ class _ProfileState extends State<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.profileTitle, style: const TextStyle(fontFamily: 'ArefRuqaa')),
+        title: Text(AppLocalizations.of(context)!.profileTitle, style: const TextStyle(fontFamily: 'Monadi')),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share_outlined),
+            tooltip: 'Share',
+            onPressed: () => Share.share(_buildShareText()),
+          ),
+        ],
       ),
       body: ListView(
         children: [
@@ -240,6 +248,38 @@ class _ProfileState extends State<ProfileScreen> {
       fullName += ' ${person.familyName}';
     }
     return person.copy(name: fullName.trim());
+  }
+
+  // Builds a plain-text summary of the person's profile for the share sheet.
+  // Includes name, years, lineage (grandparent → parent), children, and bio.
+  String _buildShareText() {
+    final loc = AppLocalizations.of(context)!;
+    final buf = StringBuffer();
+
+    buf.writeln(_person!.name ?? '');
+
+    if (_person!.yearBorn != null || _person!.yearDied != null) {
+      buf.writeln('${_person!.yearBorn ?? ''} - ${_person!.yearDied ?? ''}');
+    }
+
+    if (_grandparent != null) {
+      buf.writeln('${loc.profileGrandparentM}: ${_grandparent!.name}');
+    }
+
+    if (_parent != null) {
+      buf.writeln('${loc.profileParentM}: ${_parent!.name}');
+    }
+
+    if (_children != null && _children!.isNotEmpty) {
+      buf.writeln('${loc.profileSonM}: ${_children!.map((c) => c.name).join(', ')}');
+    }
+
+    if (_person!.bio != null && _person!.bio!.isNotEmpty) {
+      buf.writeln();
+      buf.write(_person!.bio);
+    }
+
+    return buf.toString().trim();
   }
 
   void buildFamilyListView() {

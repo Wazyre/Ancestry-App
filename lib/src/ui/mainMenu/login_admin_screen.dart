@@ -62,7 +62,7 @@ class _LoginAdminState extends State<LoginAdminScreen> {
                     Text(
                       AppLocalizations.of(context)!.adminButton,
                       style: TextStyle(
-                        fontFamily: 'ArefRuqaa',
+                        fontFamily: 'Monadi',
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
                         color: colorScheme.onSurface,

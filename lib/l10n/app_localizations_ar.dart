@@ -12,6 +12,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get selectPersonValidateErr => 'إختر شخص أولا';
 
   @override
+  String get globalSearchHint => 'ابحث في كل العائلات';
+
+  @override
+  String get searchNoResults => 'لا توجد نتائج';
+
+  @override
+  String get searchViewTree => 'عرض في شجرة العائلة';
+
+  @override
   String get selectFamily => 'إختر العائلة';
 
   @override
@@ -36,7 +45,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get familyCompareMembers => 'العلاقة بين قريبيين';
 
   @override
-  String get familyContactAdmin => 'اتصل بمسؤول العائلة';
+  String get familyContactAdmin => 'تواصل مع مسؤول العائلة';
+
+  @override
+  String get familyBio => 'تاريخ العائلة';
+
+  @override
+  String get familyBioEmpty => 'لم تتم إضافة نبذة لهذه العائلة بعد.';
+
+  @override
+  String get familyBioEditorHint => 'اكتب تاريخ العائلة هنا…';
+
+  @override
+  String get familyBioEditorSave => 'حفظ';
+
+  @override
+  String get familyBioEditorInsertImage => 'إدراج صورة';
 
   @override
   String get noAdminPhone => 'لا يوجد رقم تواصل';
@@ -73,7 +97,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get optionsTitle => 'إعدادات';
 
   @override
-  String get optNameLengthLabel => 'طول الاسم:';
+  String get optNameLengthLabel => 'طول الاسم';
 
   @override
   String get nameLengthThree => 'ثلاثي';
@@ -85,13 +109,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get nameLengthFive => 'خماسي';
 
   @override
-  String get optDarkModeLabel => 'Theme Mode:';
+  String get optDarkModeLabel => 'وضع السمة';
+
+  @override
+  String get extraSettings => 'إعدادات إضافية';
 
   @override
   String get optMalesOnlyLabel => 'اظهر الرجال فقط';
 
   @override
-  String get optTextSizeLabel => 'حجم الخط:';
+  String get optTextSizeLabel => 'حجم الخط';
 
   @override
   String get textSizeSystem => 'إعداد النظام';
@@ -128,6 +155,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get adminEditPerson => 'تعديل شخص';
+
+  @override
+  String get adminQuickAdd => 'إضافة سريعة';
+
+  @override
+  String get adminQuickAddDone => 'انتهى';
+
+  @override
+  String get adminQuickAddSaveAnother => 'حفظ وأضف آخر';
 
   @override
   String get adminFormName => 'الاسم الأول';
@@ -179,4 +215,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get adminFormYearDiedVal => 'سنة الوفاة يجب أن تكون بعد سنة الولادة';
+
+  @override
+  String get treeTabTree => 'شجرة';
+
+  @override
+  String get treeTabPath => 'مسار';
+
+  @override
+  String get treeTabList => 'قائمة';
+
+  @override
+  String get relationIsParentOf => 'والد';
+
+  @override
+  String get relationIsChildOf => 'ابن';
+
+  @override
+  String get relationCommonAncestor => 'الجد المشترك';
 }

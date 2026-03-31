@@ -12,6 +12,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectPersonValidateErr => 'Please select a person';
 
   @override
+  String get globalSearchHint => 'Search across all families';
+
+  @override
+  String get searchNoResults => 'No results found';
+
+  @override
+  String get searchViewTree => 'View in family tree';
+
+  @override
   String get selectFamily => 'Choose Family';
 
   @override
@@ -37,6 +46,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get familyContactAdmin => 'Contact family admin';
+
+  @override
+  String get familyBio => 'Family History';
+
+  @override
+  String get familyBioEmpty =>
+      'No biography has been added for this family yet.';
+
+  @override
+  String get familyBioEditorHint => 'Write the family history here…';
+
+  @override
+  String get familyBioEditorSave => 'Save';
+
+  @override
+  String get familyBioEditorInsertImage => 'Insert Image';
 
   @override
   String get noAdminPhone => 'No contact number';
@@ -73,7 +98,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get optionsTitle => 'Options';
 
   @override
-  String get optNameLengthLabel => 'Number of Names:';
+  String get optNameLengthLabel => 'Number of Names';
 
   @override
   String get nameLengthThree => 'Three';
@@ -85,13 +110,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nameLengthFive => 'Five';
 
   @override
-  String get optDarkModeLabel => 'Theme Mode:';
+  String get optDarkModeLabel => 'Theme Mode';
+
+  @override
+  String get extraSettings => 'Extra Settings';
 
   @override
   String get optMalesOnlyLabel => 'Show males only in tree';
 
   @override
-  String get optTextSizeLabel => 'Text Size:';
+  String get optTextSizeLabel => 'Text Size';
 
   @override
   String get textSizeSystem => 'System Default';
@@ -128,6 +156,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminEditPerson => 'Edit Person';
+
+  @override
+  String get adminQuickAdd => 'Quick Add';
+
+  @override
+  String get adminQuickAddDone => 'Done';
+
+  @override
+  String get adminQuickAddSaveAnother => 'Save & Add Another';
 
   @override
   String get adminFormName => 'First Name';
@@ -180,4 +217,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminFormYearDiedVal => 'Year died must be after year born';
+
+  @override
+  String get treeTabTree => 'Tree';
+
+  @override
+  String get treeTabPath => 'Path';
+
+  @override
+  String get treeTabList => 'List';
+
+  @override
+  String get relationIsParentOf => 'is parent of';
+
+  @override
+  String get relationIsChildOf => 'is child of';
+
+  @override
+  String get relationCommonAncestor => 'Common Ancestor';
 }
